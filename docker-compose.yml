@@ -1,0 +1,96 @@
+# 웹로그 수집 분석 & 시각화 - 로컬 개발 환경
+# 흐름: client -> nginx -> app
+#       nginx/app 로그 파일 -> filebeat -> logstash -> elasticsearch -> kibana
+#
+# 주의: 개발용 설정입니다. Elasticsearch 보안(xpack.security)이 꺼져 있으므로
+#       EC2 등 외부에 노출되는 환경에 그대로 올리지 마세요. (docs/infra-roadmap.md 참고)
+#       모든 포트는 127.0.0.1(내 PC)에서만 열립니다.
+#       팀 공용 서버로 쓸 때는 docker-compose.shared.yml 을 함께 사용 (docs/shared-server.md)
+
+services:
+  app:
+    build: ./app
+    container_name: ping-app
+    volumes:
+      - ./logs/app:/var/log/app
+    expose:
+      - "5000"
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:${NGINX_VERSION}
+    container_name: ping-nginx
+    depends_on:
+      - app
+    ports:
+      - "127.0.0.1:${NGINX_HTTP_PORT}:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./logs/nginx:/var/log/nginx-json
+    restart: unless-stopped
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
+    container_name: ping-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms${ES_HEAP} -Xmx${ES_HEAP}
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    ports:
+      - "127.0.0.1:9200:9200"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:${ELASTIC_VERSION}
+    container_name: ping-logstash
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - LS_JAVA_OPTS=-Xms512m -Xmx512m
+      - ES_HOSTS=http://elasticsearch:9200
+    volumes:
+      - ./logstash/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+    expose:
+      - "5044"
+    restart: unless-stopped
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:${ELASTIC_VERSION}
+    container_name: ping-filebeat
+    user: root
+    # Windows 바인드 마운트는 파일 권한 검사를 통과하지 못하므로 strict.perms 비활성화
+    command: ["filebeat", "-e", "--strict.perms=false"]
+    depends_on:
+      - logstash
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./logs/nginx:/logs/nginx:ro
+      - ./logs/app:/logs/app:ro
+      - filebeat-data:/usr/share/filebeat/data
+    restart: unless-stopped
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:${ELASTIC_VERSION}
+    container_name: ping-kibana
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "127.0.0.1:5601:5601"
+    restart: unless-stopped
+
+volumes:
+  es-data:
+  filebeat-data:
