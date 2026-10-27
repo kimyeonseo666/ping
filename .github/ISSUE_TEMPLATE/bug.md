@@ -1,7 +1,7 @@
 ---
 name: 버그 / 문제
-about: 동작하지 않거나 예상과 다르게 동작하는 문제([Fix])
-title: "[Fix] "
+about: 동작하지 않거나 예상과 다르게 동작하는 문제(fix)
+title: "fix: "
 labels: bug
 assignees: ''
 ---

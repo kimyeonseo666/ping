@@ -1,13 +1,14 @@
 ---
 name: 기능 추가 / 수정
-about: 새 기능·설정 추가([Add]) 또는 기존 기능 보완([Update])
-title: "[Add] "
+about: 새 기능(feat), 문서(docs), 설정·잡무(chore), 코드 정리(refactor) 등
+title: "feat: "
 labels: enhancement
 assignees: ''
 ---
 
 ## 작업 개요
 <!-- 무엇을, 왜 하는지 한두 줄로 적어 주세요 -->
+<!-- 제목 말머리: feat(새 기능) / docs(문서) / chore(설정·잡무) / refactor(코드 정리) / test(테스트) -->
 
 
 ## 할 일
