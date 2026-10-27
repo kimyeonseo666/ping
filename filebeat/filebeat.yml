@@ -1,0 +1,36 @@
+filebeat.inputs:
+  # nginx JSON 접속 로그
+  - type: filestream
+    id: nginx-access
+    paths:
+      - /logs/nginx/access.json.log
+    parsers:
+      - ndjson:
+          target: ""
+          add_error_key: true
+    fields:
+      log_type: nginx
+    fields_under_root: true
+
+  # 테스트 웹앱 인증 결과 로그
+  - type: filestream
+    id: app-auth
+    paths:
+      - /logs/app/auth.json.log
+    parsers:
+      - ndjson:
+          target: ""
+          add_error_key: true
+    fields:
+      log_type: auth
+    fields_under_root: true
+
+processors:
+  - drop_fields:
+      fields: ["agent", "ecs", "input", "log.offset"]
+      ignore_missing: true
+
+output.logstash:
+  hosts: ["logstash:5044"]
+
+logging.level: info

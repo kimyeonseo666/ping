@@ -1,0 +1,10 @@
+logs/
+.venv/
+__pycache__/
+*.pyc
+
+# PC별 설정 (.env.example 을 복사해서 사용)
+.env
+
+# 개인 로컬 설정
+.claude/settings.local.json
