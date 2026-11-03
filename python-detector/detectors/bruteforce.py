@@ -59,7 +59,7 @@ def process_login_log(log):
     state_key = (client_ip, user_id)
 
     # 타임스탬프 파싱
-    raw_timestamp = log.get("@timestamp")
+    raw_timestamp = log.get("@timestamp") or log.get("timestamp") or datetime.now().isoformat()
     try:
         log_time = datetime.fromisoformat(raw_timestamp)
     except (ValueError, TypeError):
