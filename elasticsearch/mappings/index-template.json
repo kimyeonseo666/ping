@@ -1,0 +1,203 @@
+
+{
+  "index_patterns": [
+    "weblog-raw-*"
+  ],
+  "priority": 200,
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0
+    },
+    "mappings": {
+      "dynamic": true,
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "time": {
+          "type": "keyword"
+        },
+        "request_id": {
+          "type": "keyword"
+        },
+        "source": {
+          "type": "keyword"
+        },
+        "log_type": {
+          "type": "keyword"
+        },
+
+        "client_ip": {
+          "type": "ip"
+        },
+        "remote_addr": {
+          "type": "ip"
+        },
+        "x_forwarded_for": {
+          "type": "keyword"
+        },
+
+        "host": {
+          "type": "keyword"
+        },
+        "http_host": {
+          "type": "keyword"
+        },
+
+        "method": {
+          "type": "keyword"
+        },
+        "request_method": {
+          "type": "keyword"
+        },
+        "path": {
+          "type": "keyword"
+        },
+        "uri": {
+          "type": "keyword"
+        },
+        "request_uri": {
+          "type": "keyword",
+          "ignore_above": 8191
+        },
+        "decoded_uri": {
+          "type": "keyword",
+          "ignore_above": 8191
+        },
+        "normalized_path": {
+          "type": "keyword"
+        },
+        "query_string": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 8191
+            }
+          }
+        },
+        "args": {
+          "type": "keyword",
+          "ignore_above": 8191
+        },
+
+        "server_protocol": {
+          "type": "keyword"
+        },
+        "status_code": {
+          "type": "integer"
+        },
+        "status": {
+          "type": "integer"
+        },
+        "status_class": {
+          "type": "keyword"
+        },
+
+        "response_time": {
+          "type": "float"
+        },
+        "request_time": {
+          "type": "float"
+        },
+        "response_size": {
+          "type": "long"
+        },
+        "body_bytes_sent": {
+          "type": "long"
+        },
+        "request_length": {
+          "type": "long"
+        },
+        "upstream_status": {
+          "type": "keyword"
+        },
+        "upstream_response_time": {
+          "type": "keyword"
+        },
+
+        "referer": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 1024
+            }
+          }
+        },
+        "http_referer": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 1024
+            }
+          }
+        },
+        "user_agent": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 1024
+            }
+          }
+        },
+        "http_user_agent": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 1024
+            }
+          }
+        },
+        "user_agent_type": {
+          "type": "keyword"
+        },
+
+        "request_body": {
+          "type": "text"
+        },
+
+        "response_inspection": {
+          "type": "keyword"
+        },
+        "sensitive_data_type": {
+          "type": "keyword"
+        },
+
+        "login_result": {
+          "type": "keyword"
+        },
+        "user_id": {
+          "type": "keyword"
+        },
+        "username": {
+          "type": "keyword"
+        },
+        "result": {
+          "type": "keyword"
+        },
+        "event": {
+          "type": "keyword"
+        },
+
+        "decode_count": {
+          "type": "integer"
+        },
+        "is_static": {
+          "type": "boolean"
+        },
+        "target_truncated": {
+          "type": "boolean"
+        },
+
+        "tags": {
+          "type": "keyword"
+        }
+      }
+    }
+  }
+}
