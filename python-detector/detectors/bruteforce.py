@@ -3,23 +3,25 @@ from datetime import datetime, timedelta
 # ==========================================
 # 1. 탐지기 설정값 (상수) - 문서 명세 기준
 # ==========================================
-LOGIN_PATH = "/login"           # 로그인 처리 경로 (문서 기준)
+LOGIN_PATH = "/api/login"       # 로그인 처리 경로 (문서 기준)
 LOGIN_METHOD = "POST"           # 로그인 시도로 인정할 HTTP 방식
+
+ADMIN_USERS = ["admin", "root", "administrator", "master", "system"]  # 관리자 계정 목록
 
 SHORT_WINDOW_SECONDS = 60       # 최근 1분 (60초)
 LONG_WINDOW_SECONDS = 300       # 최근 5분 (300초)
 
 # 1분 기준 실패 횟수 임계값
-OBSERVE_1M = 5                  # 1분 내 5회 이상 (관찰)
-WARNING_1M = 10                 # 1분 내 10회 이상 (경고)
-ALERT_1M = 20                   # 1분 내 20회 이상 (알림)
-BLOCK_1M = 30                   # 1분 내 30회 이상 (차단)
+level1_1M = 5                  # 1분 내 5회 이상 (관찰)
+level2_1M = 10                 # 1분 내 10회 이상 (경고)
+level3_1M = 20                   # 1분 내 20회 이상 (알림)
+level4_1M = 30                   # 1분 내 30회 이상 (차단)
 
 # 5분 기준 실패 횟수 임계값
-OBSERVE_5M = 20                 # 5분 내 15회 이상 (관찰)
-WARNING_5M = 40                 # 5분 내 30회 이상 (경고)
-ALERT_5M = 70                   # 5분 내 60회 이상 (알림)
-BLOCK_5M = 100                  # 5분 내 100회 이상 (차단)
+level1_5M = 20                 # 5분 내 15회 이상 (관찰)
+level2_5M = 40                 # 5분 내 30회 이상 (경고)
+level3_5M = 70                   # 5분 내 60회 이상 (알림)
+level4_5M = 100                  # 5분 내 100회 이상 (차단)
 
 # ==========================================
 # 2. 탐지기 내부 상태 저장소
@@ -57,7 +59,7 @@ def process_login_log(log):
     state_key = (client_ip, user_id)
 
     # 타임스탬프 파싱
-    raw_timestamp = log.get("timestamp") or log.get("@timestamp")
+    raw_timestamp = log.get("@timestamp")
     try:
         log_time = datetime.fromisoformat(raw_timestamp)
     except (ValueError, TypeError):
@@ -91,74 +93,68 @@ def process_login_log(log):
     count_1m = len([t for t in state["failures"] if t > cutoff_1m])
 
     # --------------------------------------------------
-    # 4. 1분 기준 및 5분 기준 위험도 각자 계산
+    # 4. 기본 점수 산정 (Base Score)
     # --------------------------------------------------
-    # (1분 기준 위험도)
-    level_1m = "NONE"
-    if count_1m >= BLOCK_1M:
-        level_1m = "BLOCK"
-    elif count_1m >= ALERT_1M:
-        level_1m = "ALERT"
-    elif count_1m >= WARNING_1M:
-        level_1m = "WARNING"
-    elif count_1m >= OBSERVE_1M:
-        level_1m = "OBSERVE"
-
-    # (5분 기준 위험도)
-    level_5m = "NONE"
-    if count_5m >= BLOCK_5M:
-        level_5m = "BLOCK"
-    elif count_5m >= ALERT_5M:
-        level_5m = "ALERT"
-    elif count_5m >= WARNING_5M:
-        level_5m = "WARNING"
-    elif count_5m >= OBSERVE_5M:
-        level_5m = "OBSERVE"
+    is_admin = user_id.lower() in ADMIN_USERS
+    base_score = 45 if is_admin else 30  # 관리자 45점 / 일반 계정 30점
 
     # --------------------------------------------------
-    # 5. 둘 중 더 높은 위험도(Severity) 선택 및 대응(Action) 결정
+    # 5. 가중치 점수 산정 (Weight Score)
     # --------------------------------------------------
-    levels = ["NONE", "OBSERVE", "WARNING", "ALERT", "BLOCK"]
-    idx_1m = levels.index(level_1m)
-    idx_5m = levels.index(level_5m)
+    weight_score = 0
+    if count_1m >= level4_1M or count_5m >= level4_5M:
+        weight_score += 20
+    elif count_1m >= level3_1M or count_5m >= level3_5M:
+        weight_score += 15
+    elif count_1m >= level2_1M or count_5m >= level2_5M:
+        weight_score += 10
+    elif count_1m >= level1_1M or count_5m >= level1_5M:
+        weight_score += 5
 
-    # 더 높은 위험도 선택
-    if idx_1m >= idx_5m:
-        new_level = level_1m
+    # 다른 공격 연계 여부 체크 (로그 내 연계 정보가 있을 경우 +15점)
+    if log.get("linked_attack") is True:
+        weight_score += 15
+
+    # 최종 위험점수 계산 (최대 100점 산한)
+    risk_score = min(100, base_score + weight_score)
+
+    # --------------------------------------------------
+    # 6. 위험점수에 따른 공통 위험도 (Severity) 및 대응 (Action) 판정
+    # --------------------------------------------------
+    if risk_score >= 75:
+        new_severity = "CRITICAL"
+        action = "BLOCK"
+    elif risk_score >= 50:
+        new_severity = "HIGH"
+        action = "BLOCK_CANDIDATE"
+    elif risk_score >= 25:
+        new_severity = "MEDIUM"
+        action = "ALERT"
     else:
-        new_level = level_5m
-
-    # 위험도에 대응하는 Action 결정
-    action_map = {
-        "NONE": "RECORD",
-        "OBSERVE": "RECORD",
-        "WARNING": "ALERT",
-        "ALERT": "BLOCK_CANDIDATE",
-        "BLOCK": "BLOCK"
-    }
-    action = action_map.get(new_level, "RECORD")
+        new_severity = "LOW"
+        action = "RECORD"
 
     # --------------------------------------------------
-    # 6. 위험 등급 상승 시에만 새 탐지 이벤트 생성
+    # 7. 위험 등급 상승 시에만 새 탐지 이벤트 생성
     # --------------------------------------------------
-    current_level_idx = levels.index(state["level"])
-    new_level_idx = levels.index(new_level)
-
-    if new_level_idx > current_level_idx:
-        state["level"] = new_level  # 현재 등급 업데이트
+    levels = ["NONE", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
+    if levels.index(new_severity) > levels.index(state.get("level", "NONE")):
+        state["level"] = new_severity  # 위험도 갱신
 
         detection_event = {
             "attack_type": "BRUTE_FORCE",
-            "severity": new_level,
+            "severity": new_severity,
             "action": action,
+            "risk_score": risk_score,
+            "base_score": base_score,
+            "weight_score": weight_score,
             "client_ip": client_ip,
             "user_id": user_id,
+            "is_admin_target": is_admin,
             "login_path": path,
             "failure_count_1m": count_1m,
             "failure_count_5m": count_5m,
             "detected_at": raw_timestamp,
-            "reason": f"1분 내 실패 {count_1m}회 / 5분 내 실패 {count_5m}회 발생 (위험도: {new_level})"
+            "reason": f"기본점수 {base_score}점 + 가중치 {weight_score}점 (총점: {risk_score}점 / {new_severity})"
         }
         return detection_event
-
-    return None
