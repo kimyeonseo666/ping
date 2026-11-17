@@ -1,0 +1,5 @@
+#Python 탐지 모듈에 필요한 라이브러리를 관리합니다
+
+elasticsearch
+python-dotenv
+필요한 라이브러리는 실제 코드에 맞춰 추가하면 됩니당
