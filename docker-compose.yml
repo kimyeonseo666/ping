@@ -3,9 +3,9 @@
 #       nginx/app 로그 파일 -> filebeat -> logstash -> elasticsearch -> kibana
 #
 # 주의: 개발용 설정입니다. Elasticsearch 보안(xpack.security)이 꺼져 있으므로
-#       EC2 등 외부에 노출되는 환경에 그대로 올리지 마세요. (docs/infra-roadmap.md 참고)
+#       EC2 등 외부에 노출되는 환경에 그대로 올리지 마세요.
 #       모든 포트는 127.0.0.1(내 PC)에서만 열립니다.
-#       팀 공용 서버로 쓸 때는 docker-compose.shared.yml 을 함께 사용 (docs/shared-server.md)
+#       팀 공용 서버로 쓸 때는 docker-compose.shared.yml 을 함께 사용
 
 services:
   app:

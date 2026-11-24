@@ -5,7 +5,10 @@
 #
 # 기본 설정(127.0.0.1)은 그대로 두고, Tailscale 주소로도 포트를 추가로 엽니다.
 # Tailscale 주소는 팀원(공유받은 사람)만 접속할 수 있으므로 인터넷에는 노출되지 않습니다.
-# 자세한 내용: docs/shared-server.md
+#
+# 준비: 호스트 PC에 Tailscale 설치 → `tailscale ip -4` 결과를 .env 의 TAILSCALE_IP 에 입력
+#       → Tailscale 관리 화면에서 호스트 PC를 팀원에게 Share
+# 팀원 접속: http://<TAILSCALE_IP>:5601 (Kibana), :9200 (ES), :8080 (웹앱)
 
 services:
   nginx:
