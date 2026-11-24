@@ -1,0 +1,7 @@
+# OS와 관계없이 저장소에는 LF로 저장, 체크아웃도 LF
+# (Windows에서 CRLF로 바뀌면 컨테이너 안 스크립트/설정이 깨질 수 있음)
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.pdf binary

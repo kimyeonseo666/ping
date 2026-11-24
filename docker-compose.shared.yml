@@ -1,0 +1,24 @@
+# 팀 공용 서버 모드 (Tailscale 경유 접속)
+#
+# 사용법 (호스트 PC에서):
+#   docker compose -f docker-compose.yml -f docker-compose.shared.yml up -d
+#
+# 기본 설정(127.0.0.1)은 그대로 두고, Tailscale 주소로도 포트를 추가로 엽니다.
+# Tailscale 주소는 팀원(공유받은 사람)만 접속할 수 있으므로 인터넷에는 노출되지 않습니다.
+#
+# 준비: 호스트 PC에 Tailscale 설치 → `tailscale ip -4` 결과를 .env 의 TAILSCALE_IP 에 입력
+#       → Tailscale 관리 화면에서 호스트 PC를 팀원에게 Share
+# 팀원 접속: http://<TAILSCALE_IP>:5601 (Kibana), :9200 (ES), :8080 (웹앱)
+
+services:
+  nginx:
+    ports:
+      - "${TAILSCALE_IP:?.env 에 TAILSCALE_IP 를 설정하세요 (tailscale ip -4)}:${NGINX_HTTP_PORT}:80"
+
+  elasticsearch:
+    ports:
+      - "${TAILSCALE_IP:?.env 에 TAILSCALE_IP 를 설정하세요 (tailscale ip -4)}:9200:9200"
+
+  kibana:
+    ports:
+      - "${TAILSCALE_IP:?.env 에 TAILSCALE_IP 를 설정하세요 (tailscale ip -4)}:5601:5601"
