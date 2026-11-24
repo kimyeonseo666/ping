@@ -13,7 +13,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-BASE = os.environ.get("WEB_HOST", "http://localhost:8080")
+BASE = os.environ.get("WEB_HOST", "http://localhost:8081")
 ES = os.environ.get("ES_HOST", "http://localhost:9200")
 # 인덱스 이름은 저장/파이프라인 설정을 따른다 (예: weblog-raw-YYYY.MM.DD)
 INDEX = os.environ.get("SMOKE_INDEX", "weblog-*")
