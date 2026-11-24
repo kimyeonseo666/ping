@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}WatchPing! 왓치핑{% endblock %}</title>
+  <style>
+    :root {
+      --bg: #f7f7f9; --card: #ffffff; --text: #1f2430; --muted: #6b7280; --border: #e7e8ec;
+      --pink: #e8467c; --pink-dark: #c9356a; --pink-weak: #fdebf2;
+      --gray-weak: #f1f2f5; --ok: #15803d; --ok-bg: #ecfdf3; --err: #c9356a; --err-bg: #fdebf2;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+           background: var(--bg); color: var(--text); line-height: 1.6; }
+    a { color: inherit; text-decoration: none; }
+
+    header { background: #fff; border-bottom: 3px solid var(--pink); }
+    .bar { max-width: 1040px; margin: 0 auto; padding: 12px 16px; display: flex; align-items: center; gap: 14px; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand .logo { width: 32px; height: 32px; }
+    .brand-name { font-weight: 800; font-size: 20px; letter-spacing: -0.4px; }
+    .brand-name b { color: var(--pink); }
+    .brand-sub { font-size: 13px; color: var(--muted); margin-left: 2px; }
+    .bar form { margin-left: auto; display: flex; gap: 6px; }
+    .bar input { border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; width: 220px; font-size: 14px;
+                 background: var(--gray-weak); outline: 0; color: var(--text); }
+    .bar input:focus { border-color: var(--pink); background: #fff; }
+    .bar button { border: 0; border-radius: 8px; padding: 8px 14px; background: var(--pink); color: #fff;
+                  font-weight: 700; cursor: pointer; }
+    .bar button:hover { background: var(--pink-dark); }
+
+    main { max-width: 1040px; margin: 24px auto; padding: 0 16px; }
+    h2 { font-size: 18px; margin: 0 0 14px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    .muted { color: var(--muted); font-size: 14px; }
+    .tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 6px;
+           background: var(--gray-weak); color: #4b5563; white-space: nowrap; }
+    .tag.공지 { background: var(--pink-weak); color: var(--pink-dark); }
+    .btn { display: inline-block; border: 0; border-radius: 8px; padding: 10px 16px; background: var(--pink);
+           color: #fff; font-weight: 700; cursor: pointer; font-size: 14px; }
+    .btn:hover { background: var(--pink-dark); }
+    .btn.secondary { background: var(--gray-weak); color: var(--text); }
+    .btn.secondary:hover { background: #e6e7eb; }
+    footer { max-width: 1040px; margin: 36px auto; padding: 0 16px; }
+    @media (max-width: 640px) {
+      .bar { flex-wrap: wrap; }
+      .brand-sub { display: none; }
+      .bar form { margin-left: 0; width: 100%; }
+      .bar input { flex: 1; width: auto; }
+    }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <a class="brand" href="/">
+        {% set logo_class = "" %}{% include "logo.html" %}
+        <span class="brand-name">Watch<b>Ping!</b></span>
+        <span class="brand-sub">왓치핑</span>
+      </a>
+      <form action="/search" method="get">
+        <input name="q" placeholder="게시글 검색" value="{{ q or '' }}" aria-label="게시글 검색">
+        <button type="submit">검색</button>
+      </form>
+    </div>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="muted">© 2026 WatchPing! 왓치핑 · Ping! 14기 웹로그 보안관제 프로젝트</footer>
+</body>
+</html>
