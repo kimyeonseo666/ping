@@ -18,6 +18,14 @@ AUTH_LOG_PATH = os.environ.get("AUTH_LOG_PATH", "/var/log/app/auth.json.log")
 DEMO_USER = os.environ.get("DEMO_USER", "admin")
 DEMO_PASSWORD = os.environ.get("DEMO_PASSWORD", "ping-demo-pw")
 
+# 시연용 계정 (실제 서비스 계정 아님). member 계정은 정상 사용자 트래픽 생성기가 사용
+USERS = {
+    DEMO_USER: DEMO_PASSWORD,
+    "member1": "member1-pw",
+    "member2": "member2-pw",
+    "member3": "member3-pw",
+}
+
 TEAM = [
     {"emoji": "📊", "role": "팀장 · 대시보드/시각화", "name": "김연서", "desc": "Kibana 관제 대시보드, 시연 시나리오"},
     {"emoji": "🕵️", "role": "탐지 로직", "name": "김하연", "desc": "스캐닝·브루트포스·인젝션 탐지 규칙, 오탐 튜닝"},
@@ -103,7 +111,7 @@ def not_found(_):
 def login():
     username = request.form.get("username", "")
     password = request.form.get("password", "")
-    success = username == DEMO_USER and password == DEMO_PASSWORD
+    success = username in USERS and USERS[username] == password
     write_auth_log(username, success)
     if success:
         return jsonify(result="ok")

@@ -8,7 +8,7 @@
 #
 # 준비: 호스트 PC에 Tailscale 설치 → `tailscale ip -4` 결과를 .env 의 TAILSCALE_IP 에 입력
 #       → Tailscale 관리 화면에서 호스트 PC를 팀원에게 Share
-# 팀원 접속: http://<TAILSCALE_IP>:5601 (Kibana), :9200 (ES), :8080 (웹앱)
+# 팀원 접속: http://<TAILSCALE_IP>:5601 (Kibana), :9200 (ES), :8081 (웹앱)
 
 services:
   nginx:

@@ -6,6 +6,19 @@
 #       EC2 등 외부에 노출되는 환경에 그대로 올리지 마세요.
 #       모든 포트는 127.0.0.1(내 PC)에서만 열립니다.
 #       팀 공용 서버로 쓸 때는 docker-compose.shared.yml 을 함께 사용
+#
+# 시연용 트래픽 (고정 IP로 공격자/정상 사용자 구분)
+#   정상 사용자 3명 (172.20.0.20~22):  docker compose --profile traffic up -d
+#   공격자 자리 (172.20.0.10):         docker compose --profile attack up -d
+#                                      docker compose exec attacker python /scripts/<스크립트>.py
+#   공격 스크립트는 attack-scripts/ 에 두며, 대상은 이 compose 환경(http://nginx)으로만 한정한다.
+
+x-normal-user: &normal-user
+  build: ./traffic
+  profiles: ["traffic"]
+  depends_on:
+    - nginx
+  restart: unless-stopped
 
 services:
   app:
@@ -92,6 +105,61 @@ services:
     ports:
       - "127.0.0.1:5601:5601"
     restart: unless-stopped
+
+  # ---------- 시연용 트래픽 (profile 로 필요할 때만 실행) ----------
+
+  normal-user-1:
+    <<: *normal-user
+    container_name: ping-normal-user-1
+    environment:
+      - USERNAME=member1
+      - PASSWORD=member1-pw
+    networks:
+      default:
+        ipv4_address: 172.20.0.20
+
+  normal-user-2:
+    <<: *normal-user
+    container_name: ping-normal-user-2
+    environment:
+      - USERNAME=member2
+      - PASSWORD=member2-pw
+    networks:
+      default:
+        ipv4_address: 172.20.0.21
+
+  normal-user-3:
+    <<: *normal-user
+    container_name: ping-normal-user-3
+    environment:
+      - USERNAME=member3
+      - PASSWORD=member3-pw
+    networks:
+      default:
+        ipv4_address: 172.20.0.22
+
+  # 공격자 자리: 고정 IP만 잡아 두고 대기. 실행할 스크립트는 attack-scripts/ 에서 관리
+  attacker:
+    build: ./traffic
+    container_name: ping-attacker
+    profiles: ["attack"]
+    command: ["sleep", "infinity"]
+    depends_on:
+      - nginx
+    volumes:
+      - ./attack-scripts:/scripts:ro
+    networks:
+      default:
+        ipv4_address: 172.20.0.10
+
+networks:
+  default:
+    ipam:
+      config:
+        # 172.20.0.2~127 은 고정 IP 용, 자동 배정은 172.20.0.128~ 에서만 (충돌 방지)
+        - subnet: 172.20.0.0/24
+          ip_range: 172.20.0.128/25
+          gateway: 172.20.0.1
 
 volumes:
   es-data:
