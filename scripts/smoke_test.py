@@ -47,7 +47,7 @@ def main():
     request(f"{BASE}/")
     request(f"{BASE}/search?q=hello")
     request(f"{BASE}/api/items/1")
-    request(f"{BASE}/login", {"username": "admin", "password": "ping-demo-pw"})
+    request(f"{BASE}/api/login", {"username": "admin", "password": "ping-demo-pw"})
     sent = 4
 
     print("[2] 최근 로그")

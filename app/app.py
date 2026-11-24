@@ -47,7 +47,8 @@ def search():
     return f"<p>검색어: {escape(q)}</p>"
 
 
-@app.post("/login")
+# 탐지 모듈(python-detector/detectors/bruteforce.py)의 LOGIN_PATH 와 일치해야 함
+@app.post("/api/login")
 def login():
     username = request.form.get("username", "")
     password = request.form.get("password", "")
