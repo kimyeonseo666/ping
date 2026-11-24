@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}검색 · WatchPing! 왓치핑{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>'{{ q }}' 검색 결과 {{ results | length }}건</h2>
+  {% if results %}
+    {% for p in results %}
+    <p><span class="tag {{ p.category }}">{{ p.category }}</span>
+       <a href="/board?id={{ p.id }}"><strong>{{ p.title }}</strong></a>
+       <span class="muted">· {{ p.date }}</span></p>
+    {% endfor %}
+  {% else %}
+    <p class="muted">검색 결과가 없습니다.</p>
+  {% endif %}
+  <p><a class="btn secondary" href="/">목록으로</a></p>
+</div>
+{% endblock %}

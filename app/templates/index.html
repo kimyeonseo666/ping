@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+  .hero { display: flex; align-items: center; gap: 22px; padding: 28px;
+          background: linear-gradient(120deg, #fdebf2 0%, #ffffff 70%); border-color: #f6d3e1; }
+  .hero .logo { width: 84px; height: 84px; flex-shrink: 0; }
+  .hero h1 { margin: 0 0 4px; font-size: 32px; letter-spacing: -0.8px; }
+  .hero h1 b { color: var(--pink); }
+  .quote { margin-top: 14px; border-left: 4px solid var(--pink); background: #fff; border-radius: 0 8px 8px 0;
+           padding: 10px 14px; font-size: 15px; }
+
+  .layout { display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start; margin-top: 20px; }
+  .post { display: flex; align-items: center; gap: 12px; padding: 12px 8px; border-bottom: 1px solid var(--border); }
+  .post:last-child { border-bottom: 0; }
+  .post:hover .post-title { color: var(--pink-dark); }
+  .post-title { flex: 1; font-weight: 600; }
+
+  label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
+  .field { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 14px;
+           outline: 0; color: var(--text); }
+  .field:focus { border-color: var(--pink); }
+  .login .btn { width: 100%; margin-top: 16px; }
+  .result { margin-top: 12px; border-radius: 8px; padding: 10px 12px; font-size: 14px; display: none; font-weight: 600; }
+  .result.ok { display: block; background: var(--ok-bg); color: var(--ok); }
+  .result.err { display: block; background: var(--err-bg); color: var(--err); }
+
+  .team-title { margin: 28px 0 12px; }
+  .team { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+  .member { display: flex; gap: 12px; align-items: flex-start; }
+  .avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--pink-weak); border: 2px solid #f6c3d7;
+            display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+  .member-name { font-weight: 800; }
+  .member-role { font-size: 13px; color: var(--pink-dark); font-weight: 700; }
+  @media (max-width: 760px) {
+    .layout { grid-template-columns: 1fr; }
+    .hero { flex-direction: column; text-align: center; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="card hero">
+  {% set logo_class = "" %}{% include "logo.html" %}
+  <div>
+    <h1>Watch<b>Ping!</b> 왓치핑</h1>
+    <div class="muted">Ping! 14기 웹로그 보안관제 팀</div>
+    <div class="quote">웹 서버 로그를 수집해 스캐닝, 브루트포스, SQL 인젝션, XSS 등 주요 공격을 실시간으로 탐지하고,
+      관제 대시보드로 시각화하는 프로젝트입니다.</div>
+  </div>
+</section>
+
+<div class="layout">
+  <section class="card">
+    <h2>게시판</h2>
+    {% for p in posts %}
+    <a class="post" href="/board?id={{ p.id }}">
+      <span class="tag {{ p.category }}">{{ p.category }}</span>
+      <span class="post-title">{{ p.title }}</span>
+      <span class="muted">{{ p.date }}</span>
+    </a>
+    {% endfor %}
+  </section>
+
+  <aside class="card login">
+    <h2>팀원 로그인</h2>
+    <form id="login-form">
+      <label for="username">아이디</label>
+      <input class="field" id="username" name="username" autocomplete="username" required>
+      <label for="password">비밀번호</label>
+      <input class="field" id="password" name="password" type="password" autocomplete="current-password" required>
+      <button class="btn" type="submit">로그인</button>
+    </form>
+    <div id="login-result" class="result" role="status"></div>
+  </aside>
+</div>
+
+<h2 class="team-title">팀원 소개</h2>
+<section class="team">
+  {% for m in team %}
+  <div class="card member">
+    <div class="avatar" aria-hidden="true">{{ m.emoji }}</div>
+    <div>
+      <div class="member-role">{{ m.role }}</div>
+      <div class="member-name">{{ m.name }}</div>
+      <div class="muted">{{ m.desc }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</section>
+
+<script>
+  // 폼을 /api/login 으로 전송 (기존 API 그대로 사용: 성공 200 / 실패 401)
+  const form = document.getElementById("login-form");
+  const box = document.getElementById("login-result");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const res = await fetch("/api/login", { method: "POST", body: new URLSearchParams(new FormData(form)) });
+    if (res.ok) {
+      box.className = "result ok";
+      box.textContent = "로그인에 성공했습니다.";
+    } else {
+      box.className = "result err";
+      box.textContent = "아이디 또는 비밀번호가 올바르지 않습니다. (" + res.status + ")";
+    }
+    form.password.value = "";
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} · WatchPing! 왓치핑{% endblock %}
+
+{% block content %}
+<article class="card">
+  <span class="tag {{ post.category }}">{{ post.category }}</span>
+  <h2 style="margin-top:12px;font-size:24px">{{ post.title }}</h2>
+  <p class="muted">{{ post.date }} · WatchPing!</p>
+  <p style="font-size:16px">{{ post.body }}</p>
+  <p><a class="btn secondary" href="/">목록으로</a></p>
+</article>
+{% endblock %}

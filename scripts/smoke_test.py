@@ -46,7 +46,7 @@ def main():
     print("[1] 정상 요청 전송")
     request(f"{BASE}/")
     request(f"{BASE}/search?q=hello")
-    request(f"{BASE}/api/items/1")
+    request(f"{BASE}/api/posts/1")
     request(f"{BASE}/api/login", {"username": "admin", "password": "ping-demo-pw"})
     sent = 4
 
